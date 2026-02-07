@@ -1,13 +1,10 @@
 const PATH_LENGTH = 7;
 
-// 自定义的字符串前缀检查函数
 export function checkStartsWith(str, prefix) {
-	if (str === undefined || str === null || prefix === undefined || prefix === null) {
+	if (str == null || prefix == null) {
 		return false;
 	}
-	str = String(str);
-	prefix = String(prefix);
-	return str.slice(0, prefix.length) === prefix;
+	return String(str).startsWith(String(prefix));
 }
 
 
@@ -263,14 +260,14 @@ export function parseUrlParams(url) {
 	let name = fragmentParts.length > 0 ? fragmentParts.join('#') : '';
 	try {
 		name = decodeURIComponent(name);
-	} catch (error) { };
+	} catch { }
 
 	return { addressPart, params, name };
 }
 
 export function createTlsConfig(params) {
 	let tls = { enabled: false };
-	if (params.security != 'none') {
+	if (params.security !== 'none') {
 		tls = {
 			enabled: true,
 			server_name: params.sni || params.host,
@@ -329,52 +326,61 @@ export function parseArray(value) {
 		.filter(entry => entry.length > 0);
 }
 
+const COUNTRY_DATA = {
+	'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
+	'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
+	'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
+	'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
+	'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
+	'US': { name: 'United States', emoji: '🇺🇸', aliases: ['美国', 'United States', 'US'] },
+	'GB': { name: 'United Kingdom', emoji: '🇬🇧', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
+	'DE': { name: 'Germany', emoji: '🇩🇪', aliases: ['德国', 'Germany'] },
+	'FR': { name: 'France', emoji: '🇫🇷', aliases: ['法国', 'France'] },
+	'RU': { name: 'Russia', emoji: '🇷🇺', aliases: ['俄罗斯', 'Russia'] },
+	'CA': { name: 'Canada', emoji: '🇨🇦', aliases: ['加拿大', 'Canada'] },
+	'AU': { name: 'Australia', emoji: '🇦🇺', aliases: ['澳大利亚', 'Australia'] },
+	'IN': { name: 'India', emoji: '🇮🇳', aliases: ['印度', 'India'] },
+	'BR': { name: 'Brazil', emoji: '🇧🇷', aliases: ['巴西', 'Brazil'] },
+	'ZA': { name: 'South Africa', emoji: '🇿🇦', aliases: ['南非', 'South Africa'] },
+	'AR': { name: 'Argentina', emoji: '🇦🇷', aliases: ['阿根廷', 'Argentina'] },
+	'TR': { name: 'Turkey', emoji: '🇹🇷', aliases: ['土耳其', 'Turkey'] },
+	'NL': { name: 'Netherlands', emoji: '🇳🇱', aliases: ['荷兰', 'Netherlands'] },
+	'CH': { name: 'Switzerland', emoji: '🇨🇭', aliases: ['瑞士', 'Switzerland'] },
+	'SE': { name: 'Sweden', emoji: '🇸🇪', aliases: ['瑞典', 'Sweden'] },
+	'IT': { name: 'Italy', emoji: '🇮🇹', aliases: ['意大利', 'Italy'] },
+	'ES': { name: 'Spain', emoji: '🇪🇸', aliases: ['西班牙', 'Spain'] },
+	'IE': { name: 'Ireland', emoji: '🇮🇪', aliases: ['爱尔兰', 'Ireland'] },
+	'MY': { name: 'Malaysia', emoji: '🇲🇾', aliases: ['马来西亚', 'Malaysia'] },
+	'TH': { name: 'Thailand', emoji: '🇹🇭', aliases: ['泰国', 'Thailand'] },
+	'VN': { name: 'Vietnam', emoji: '🇻🇳', aliases: ['越南', 'Vietnam'] },
+	'PH': { name: 'Philippines', emoji: '🇵🇭', aliases: ['菲律宾', 'Philippines'] },
+	'ID': { name: 'Indonesia', emoji: '🇮🇩', aliases: ['印度尼西亚', 'Indonesia'] },
+	'NZ': { name: 'New Zealand', emoji: '🇳🇿', aliases: ['新西兰', 'New Zealand'] },
+	'AE': { name: 'United Arab Emirates', emoji: '🇦🇪', aliases: ['阿联酋', 'United Arab Emirates'] },
+};
+
+// Pre-build the alias-to-code lookup map and compiled regex once at module level
+const _aliasToCode = new Map();
+for (const code in COUNTRY_DATA) {
+	for (const alias of COUNTRY_DATA[code].aliases) {
+		_aliasToCode.set(alias.toLowerCase(), code);
+	}
+}
+const _countryRegex = new RegExp(
+	Object.values(COUNTRY_DATA)
+		.flatMap(c => c.aliases)
+		.map(p => p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+		.join('|'),
+	'i'
+);
+
 export function parseCountryFromNodeName(nodeName) {
-	const countryData = {
-		'HK': { name: 'Hong Kong', emoji: '🇭🇰', aliases: ['香港', 'Hong Kong', 'HK'] },
-		'TW': { name: 'Taiwan', emoji: '🇹🇼', aliases: ['台湾', 'Taiwan', 'TW'] },
-		'JP': { name: 'Japan', emoji: '🇯🇵', aliases: ['日本', 'Japan', 'JP'] },
-		'KR': { name: 'Korea', emoji: '🇰🇷', aliases: ['韩国', 'Korea', 'KR'] },
-		'SG': { name: 'Singapore', emoji: '🇸🇬', aliases: ['新加坡', 'Singapore', 'SG'] },
-		'US': { name: 'United States', emoji: '🇺🇸', aliases: ['美国', 'United States', 'US'] },
-		'GB': { name: 'United Kingdom', emoji: '🇬🇧', aliases: ['英国', 'United Kingdom', 'UK', 'GB'] },
-		'DE': { name: 'Germany', emoji: '🇩🇪', aliases: ['德国', 'Germany'] },
-		'FR': { name: 'France', emoji: '🇫🇷', aliases: ['法国', 'France'] },
-		'RU': { name: 'Russia', emoji: '🇷🇺', aliases: ['俄罗斯', 'Russia'] },
-		'CA': { name: 'Canada', emoji: '🇨🇦', aliases: ['加拿大', 'Canada'] },
-		'AU': { name: 'Australia', emoji: '🇦🇺', aliases: ['澳大利亚', 'Australia'] },
-		'IN': { name: 'India', emoji: '🇮🇳', aliases: ['印度', 'India'] },
-		'BR': { name: 'Brazil', emoji: '🇧🇷', aliases: ['巴西', 'Brazil'] },
-		'ZA': { name: 'South Africa', emoji: '🇿🇦', aliases: ['南非', 'South Africa'] },
-		'AR': { name: 'Argentina', emoji: '🇦🇷', aliases: ['阿根廷', 'Argentina'] },
-		'TR': { name: 'Turkey', emoji: '🇹🇷', aliases: ['土耳其', 'Turkey'] },
-		'NL': { name: 'Netherlands', emoji: '🇳🇱', aliases: ['荷兰', 'Netherlands'] },
-		'CH': { name: 'Switzerland', emoji: '🇨🇭', aliases: ['瑞士', 'Switzerland'] },
-		'SE': { name: 'Sweden', emoji: '🇸🇪', aliases: ['瑞典', 'Sweden'] },
-		'IT': { name: 'Italy', emoji: '🇮🇹', aliases: ['意大利', 'Italy'] },
-		'ES': { name: 'Spain', emoji: '🇪🇸', aliases: ['西班牙', 'Spain'] },
-		'IE': { name: 'Ireland', emoji: '🇮🇪', aliases: ['爱尔兰', 'Ireland'] },
-		'MY': { name: 'Malaysia', emoji: '🇲🇾', aliases: ['马来西亚', 'Malaysia'] },
-		'TH': { name: 'Thailand', emoji: '🇹🇭', aliases: ['泰国', 'Thailand'] },
-		'VN': { name: 'Vietnam', emoji: '🇻🇳', aliases: ['越南', 'Vietnam'] },
-		'PH': { name: 'Philippines', emoji: '🇵🇭', aliases: ['菲律宾', 'Philippines'] },
-		'ID': { name: 'Indonesia', emoji: '🇮🇩', aliases: ['印度尼西亚', 'Indonesia'] },
-		'NZ': { name: 'New Zealand', emoji: '🇳🇿', aliases: ['新西兰', 'New Zealand'] },
-		'AE': { name: 'United Arab Emirates', emoji: '🇦🇪', aliases: ['阿联酋', 'United Arab Emirates'] },
-	};
-
-	const allAliases = Object.values(countryData).flatMap(c => c.aliases);
-	const regex = new RegExp(allAliases.map(p => p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|'), 'i');
-	const match = nodeName.match(regex);
-
+	const match = nodeName.match(_countryRegex);
 	if (match) {
-		const matchedAlias = match[0];
-		for (const code in countryData) {
-			if (countryData[code].aliases.some(alias => alias.toLowerCase() === matchedAlias.toLowerCase())) {
-				return { code, ...countryData[code] };
-			}
+		const code = _aliasToCode.get(match[0].toLowerCase());
+		if (code) {
+			return { code, ...COUNTRY_DATA[code] };
 		}
 	}
-
 	return null;
 }

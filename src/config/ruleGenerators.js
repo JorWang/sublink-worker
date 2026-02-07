@@ -40,8 +40,7 @@ export function generateRules(selectedRules = [], customRules = []) {
 		}
 	});
 
-	customRules.reverse();
-	customRules.forEach((rule) => {
+	[...customRules].reverse().forEach((rule) => {
 		rules.unshift({
 			site_rules: rule.site ? rule.site.split(',') : [],
 			ip_rules: rule.ip ? rule.ip.split(',') : [],

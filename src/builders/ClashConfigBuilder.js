@@ -392,12 +392,11 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
     addCustomRuleGroups(proxyList) {
         if (Array.isArray(this.customRules)) {
             this.customRules.forEach(rule => {
-                const name = this.t(`outboundNames.${rule.name}`);
-                if (!this.hasProxyGroup(name)) {
+                if (!this.hasProxyGroup(rule.name)) {
                     const proxies = this.buildSelectGroupMembers(proxyList);
                     this.config['proxy-groups'].push({
                         type: "select",
-                        name,
+                        name: rule.name,
                         proxies
                     });
                 }

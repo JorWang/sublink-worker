@@ -411,31 +411,31 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         // Rule-Set & Domain Rules & IP Rules:  To reduce DNS leaks and unnecessary DNS queries,
         // domain & non-IP rules must precede IP rules
 
-        rules.filter(rule => !!rule.domain_suffix).map(rule => {
+        rules.filter(rule => !!rule.domain_suffix).forEach(rule => {
             rule.domain_suffix.forEach(suffix => {
                 finalConfig.push(`DOMAIN-SUFFIX,${suffix},${this.t('outboundNames.' + rule.outbound)}`);
             });
         });
 
-        rules.filter(rule => !!rule.domain_keyword).map(rule => {
+        rules.filter(rule => !!rule.domain_keyword).forEach(rule => {
             rule.domain_keyword.forEach(keyword => {
                 finalConfig.push(`DOMAIN-KEYWORD,${keyword},${this.t('outboundNames.' + rule.outbound)}`);
             });
         });
 
-        rules.filter(rule => rule.site_rules[0] !== '').map(rule => {
+        rules.filter(rule => rule.site_rules[0] !== '').forEach(rule => {
             rule.site_rules.forEach(site => {
                 finalConfig.push(`RULE-SET,${SURGE_SITE_RULE_SET_BASEURL}${site}.conf,${this.t('outboundNames.' + rule.outbound)}`);
             });
         });
 
-        rules.filter(rule => rule.ip_rules[0] !== '').map(rule => {
+        rules.filter(rule => rule.ip_rules[0] !== '').forEach(rule => {
             rule.ip_rules.forEach(ip => {
                 finalConfig.push(`RULE-SET,${SURGE_IP_RULE_SET_BASEURL}${ip}.txt,${this.t('outboundNames.' + rule.outbound)},no-resolve`);
             });
         });
 
-        rules.filter(rule => !!rule.ip_cidr).map(rule => {
+        rules.filter(rule => !!rule.ip_cidr).forEach(rule => {
             rule.ip_cidr.forEach(cidr => {
                 finalConfig.push(`IP-CIDR,${cidr},${this.t('outboundNames.' + rule.outbound)},no-resolve`);
             });

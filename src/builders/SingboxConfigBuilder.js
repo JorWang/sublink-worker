@@ -82,7 +82,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
     }
 
     getProxies() {
-        return this.config.outbounds.filter(outbound => outbound?.server != undefined);
+        return this.config.outbounds.filter(outbound => outbound?.server !== undefined);
     }
 
     getProxyName(proxy) {
@@ -425,7 +425,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
         // Validate outbounds: fill empty urltest groups with all proxies
         this.validateOutbounds();
 
-        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).map(rule => {
+        rules.filter(rule => !!rule.domain_suffix || !!rule.domain_keyword).forEach(rule => {
             this.config.route.rules.push({
                 domain_suffix: rule.domain_suffix,
                 domain_keyword: rule.domain_keyword,
@@ -434,7 +434,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             });
         });
 
-        rules.filter(rule => !!rule.site_rules[0]).map(rule => {
+        rules.filter(rule => !!rule.site_rules[0]).forEach(rule => {
             this.config.route.rules.push({
                 rule_set: [
                     ...(rule.site_rules.length > 0 && rule.site_rules[0] !== '' ? rule.site_rules : []),
@@ -444,7 +444,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             });
         });
 
-        rules.filter(rule => !!rule.ip_rules[0]).map(rule => {
+        rules.filter(rule => !!rule.ip_rules[0]).forEach(rule => {
             this.config.route.rules.push({
                 rule_set: [
                     ...(rule.ip_rules
@@ -457,7 +457,7 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
             });
         });
 
-        rules.filter(rule => !!rule.ip_cidr).map(rule => {
+        rules.filter(rule => !!rule.ip_cidr).forEach(rule => {
             this.config.route.rules.push({
                 ip_cidr: rule.ip_cidr,
                 protocol: rule.protocol,

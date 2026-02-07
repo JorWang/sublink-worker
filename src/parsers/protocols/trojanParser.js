@@ -5,7 +5,6 @@ export function parseTrojan(url) {
     const [password, serverInfo] = addressPart.split('@');
     const { host, port } = parseServerInfo(serverInfo);
 
-    const parsedURL = parseServerInfo(addressPart);
     const tls = createTlsConfig(params);
     const transport = params.type !== 'tcp' ? createTransportConfig(params) : undefined;
     return {
@@ -13,7 +12,7 @@ export function parseTrojan(url) {
         tag: name,
         server: host,
         server_port: port,
-        password: decodeURIComponent(password) || parsedURL.username,
+        password: decodeURIComponent(password),
         network: 'tcp',
         tcp_fast_open: false,
         tls,

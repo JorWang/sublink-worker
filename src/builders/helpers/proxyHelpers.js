@@ -24,20 +24,25 @@ export function addProxyWithDedup(collection, proxy, { getName = defaultGetName,
 
     let candidate = proxy;
     const targetName = getName(candidate) || '';
-    const similarProxies = collection.filter(item => {
-        const name = getName(item) || '';
-        return targetName && name.includes(targetName);
-    });
 
     const hasIdentical = collection.some(item => isSame(item, candidate));
     if (hasIdentical) {
         return;
     }
 
-    if (similarProxies.length > 0 && typeof setName === 'function' && targetName) {
-        const updated = setName(candidate, `${targetName} ${similarProxies.length + 1}`);
-        if (typeof updated !== 'undefined') {
-            candidate = updated;
+    // Check for exact name conflicts (not substring matches)
+    if (targetName && typeof setName === 'function') {
+        const existingNames = new Set(collection.map(item => getName(item) || ''));
+        if (existingNames.has(targetName)) {
+            // Find the next available suffix
+            let suffix = 2;
+            while (existingNames.has(`${targetName} ${suffix}`)) {
+                suffix++;
+            }
+            const updated = setName(candidate, `${targetName} ${suffix}`);
+            if (typeof updated !== 'undefined') {
+                candidate = updated;
+            }
         }
     }
 
